@@ -2,14 +2,18 @@ package com.theshireofpaws.config;
 
 import com.theshireofpaws.entity.AdminUser;
 import com.theshireofpaws.entity.Dog;
+import com.theshireofpaws.entity.enums.DogGender;  
+import com.theshireofpaws.entity.enums.DogSize;    
 import com.theshireofpaws.entity.enums.DogStatus;
 import com.theshireofpaws.repository.AdminUserRepository;
 import com.theshireofpaws.repository.DogRepository;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
+@Profile("!test")  
 public class DataSeeder implements CommandLineRunner {
     
     private final AdminUserRepository adminUserRepository;
@@ -42,9 +46,9 @@ public class DataSeeder implements CommandLineRunner {
             Dog rover = Dog.builder()
                 .name("Rover")
                 .story("Rover is a friendly and energetic dog who loves to play fetch. He's great with kids and other dogs. Looking for an active family!")
-                .gender("Male")
+                .gender(DogGender.MALE)        
                 .age(3)
-                .size("Medium")
+                .size(DogSize.MEDIUM)         
                 .photoUrl("https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400")
                 .status(DogStatus.IN_PROCESS)
                 .build();
@@ -52,9 +56,9 @@ public class DataSeeder implements CommandLineRunner {
             Dog moon = Dog.builder()
                 .name("Moon")
                 .story("Moon is a calm and gentle soul. She enjoys quiet walks and cuddling on the couch. Perfect for someone looking for a relaxed companion.")
-                .gender("Female")
+                .gender(DogGender.FEMALE)      
                 .age(5)
-                .size("Large")
+                .size(DogSize.LARGE)           
                 .photoUrl("https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=400")
                 .status(DogStatus.AVAILABLE)
                 .build();
@@ -62,9 +66,9 @@ public class DataSeeder implements CommandLineRunner {
             Dog kika = Dog.builder()
                 .name("Kika")
                 .story("Kika is a happy senior dog who still has lots of love to give. She's house-trained and would thrive in a peaceful home.")
-                .gender("Female")
+                .gender(DogGender.FEMALE)      
                 .age(8)
-                .size("Small")
+                .size(DogSize.SMALL)           
                 .photoUrl("https://images.unsplash.com/photo-1561037404-61cd46aa615b?w=400")
                 .status(DogStatus.ADOPTED)
                 .build();
@@ -72,9 +76,9 @@ public class DataSeeder implements CommandLineRunner {
             Dog max = Dog.builder()
                 .name("Max")
                 .story("Max is a playful puppy full of energy. He needs training and lots of exercise. Great for an experienced dog owner!")
-                .gender("Male")
+                .gender(DogGender.MALE)        
                 .age(1)
-                .size("Large")
+                .size(DogSize.LARGE)          
                 .photoUrl("https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=400")
                 .status(DogStatus.AVAILABLE)
                 .build();
@@ -82,9 +86,9 @@ public class DataSeeder implements CommandLineRunner {
             Dog bella = Dog.builder()
                 .name("Bella")
                 .story("Bella is a sweet and affectionate dog. She loves attention and being around people. Would make a wonderful family pet.")
-                .gender("Female")
+                .gender(DogGender.FEMALE)     
                 .age(4)
-                .size("Medium")
+                .size(DogSize.MEDIUM)         
                 .photoUrl("https://images.unsplash.com/photo-1588943211346-0908a1fb0b01?w=400")
                 .status(DogStatus.AVAILABLE)
                 .build();
@@ -92,9 +96,9 @@ public class DataSeeder implements CommandLineRunner {
             Dog charlie = Dog.builder()
                 .name("Charlie")
                 .story("Charlie is a loyal companion who loves outdoor adventures. He's well-behaved and great on a leash.")
-                .gender("Male")
+                .gender(DogGender.MALE)        
                 .age(6)
-                .size("Large")
+                .size(DogSize.LARGE)          
                 .photoUrl("https://images.unsplash.com/photo-1537151608828-ea2b11777ee8?w=400")
                 .status(DogStatus.AVAILABLE)
                 .build();
@@ -106,7 +110,7 @@ public class DataSeeder implements CommandLineRunner {
             dogRepository.save(bella);
             dogRepository.save(charlie);
             
-            System.out.println("Sample dogs created successfully");
+            System.out.println("6 sample dogs created successfully");
         }
     }
 }

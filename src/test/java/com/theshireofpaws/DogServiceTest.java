@@ -3,6 +3,8 @@ package com.theshireofpaws;
 import com.theshireofpaws.dto.request.DogRequest;
 import com.theshireofpaws.dto.response.DogResponse;
 import com.theshireofpaws.entity.Dog;
+import com.theshireofpaws.entity.enums.DogGender; 
+import com.theshireofpaws.entity.enums.DogSize;    
 import com.theshireofpaws.entity.enums.DogStatus;
 import com.theshireofpaws.exception.ResourceNotFoundException;
 import com.theshireofpaws.mapper.DogMapper;
@@ -47,9 +49,9 @@ class DogServiceTest {
             .id(testId)
             .name("Test Dog")
             .story("Test story")
-            .gender("Male")
+            .gender(DogGender.MALE)        
             .age(3)
-            .size("Medium")
+            .size(DogSize.MEDIUM)          
             .photoUrl("test-url")
             .status(DogStatus.AVAILABLE)
             .build();
@@ -57,9 +59,9 @@ class DogServiceTest {
         dogRequest = DogRequest.builder()
             .name("Test Dog")
             .story("Test story")
-            .gender("Male")
+            .gender(DogGender.MALE)       
             .age(3)
-            .size("Medium")
+            .size(DogSize.MEDIUM)          
             .photoUrl("test-url")
             .build();
         
@@ -67,9 +69,9 @@ class DogServiceTest {
             .id(testId)
             .name("Test Dog")
             .story("Test story")
-            .gender("Male")
+            .gender(DogGender.MALE)        
             .age(3)
-            .size("Medium")
+            .size(DogSize.MEDIUM)          
             .photoUrl("test-url")
             .status(DogStatus.AVAILABLE)
             .build();
@@ -88,6 +90,8 @@ class DogServiceTest {
         assertNotNull(result);
         assertEquals(testId, result.getId());
         assertEquals("Test Dog", result.getName());
+        assertEquals(DogGender.MALE, result.getGender());    
+        assertEquals(DogSize.MEDIUM, result.getSize());     
         verify(dogRepository, times(1)).findById(testId);
         verify(dogMapper, times(1)).toResponse(testDog);
     }
@@ -116,6 +120,8 @@ class DogServiceTest {
         // Assert
         assertNotNull(result);
         assertEquals("Test Dog", result.getName());
+        assertEquals(DogGender.MALE, result.getGender());    
+        assertEquals(DogSize.MEDIUM, result.getSize());      
         verify(dogRepository, times(1)).save(any(Dog.class));
     }
     
