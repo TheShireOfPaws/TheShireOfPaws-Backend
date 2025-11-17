@@ -1,0 +1,407 @@
+package com.theshireofpaws.integration;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.theshireofpaws.config.TestDataLoader;
+import com.theshireofpaws.config.TestSecurityConfig;
+import com.theshireofpaws.dto.request.AdminLoginRequest;
+import com.theshireofpaws.dto.request.DogRequest;
+import com.theshireofpaws.dto.response.DogResponse;
+import com.theshireofpaws.dto.response.JwtResponse;
+import com.theshireofpaws.entity.Dog;
+import com.theshireofpaws.entity.enums.DogStatus;
+import com.theshireofpaws.repository.AdminUserRepository;
+import com.theshireofpaws.repository.DogRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.transaction.annotation.Transactional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+@Transactional
+@ActiveProfiles("test")
+@Import({TestDataLoader.class, TestSecurityConfig.class})
+class DogIntegrationTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Autowired
+    private DogRepository dogRepository;
+
+    @Autowired
+    private AdminUserRepository adminUserRepository;
+
+    private String adminToken;
+
+    @BeforeEach
+    void setUp() throws Exception {
+
+        dogRepository.deleteAll();
+        
+        // Obtener token JWT del admin
+        adminToken = getAdminToken();
+    }
+
+    /**
+     * Helper method to get admin JWT token
+     */
+    private String getAdminToken() throws Exception {
+        AdminLoginRequest loginRequest = new AdminLoginRequest();
+        loginRequest.setEmail("admin@theshireofpaws.com");
+        loginRequest.setPassword("admin123");
+
+        MvcResult result = mockMvc.perform(post("/api/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(loginRequest)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String responseBody = result.getResponse().getContentAsString();
+        JwtResponse jwtResponse = objectMapper.readValue(responseBody, JwtResponse.class);
+        
+        return jwtResponse.getToken();
+    }
+
+    // ==================== PUBLIC ENDPOINTS TESTS ====================
+
+    @Test
+    void getAllDogs_ShouldReturnDogsList_WhenDogsExist() throws Exception {
+        // Arrange - Crear perros de prueba
+        createTestDog("Buddy", "Male", 3, "Medium");
+        createTestDog("Luna", "Female", 2, "Small");
+
+        // Act & Assert
+        mockMvc.perform(get("/api/dogs")
+                .param("page", "0")
+                .param("size", "10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(2)))
+                .andExpect(jsonPath("$.content[0].name", notNullValue()))
+                .andExpect(jsonPath("$.totalElements", is(2)));
+    }
+
+    @Test
+    void getAllDogs_ShouldReturnEmptyList_WhenNoDogsExist() throws Exception {
+        // Act & Assert
+        mockMvc.perform(get("/api/dogs"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(0)))
+                .andExpect(jsonPath("$.totalElements", is(0)));
+    }
+
+    @Test
+    void getDogById_ShouldReturnDog_WhenDogExists() throws Exception {
+        // Arrange
+        Dog dog = createTestDog("Max", "Male", 5, "Large");
+
+        // Act & Assert
+        mockMvc.perform(get("/api/dogs/{id}", dog.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(dog.getId().toString())))
+                .andExpect(jsonPath("$.name", is("Max")))
+                .andExpect(jsonPath("$.gender", is("Male")))
+                .andExpect(jsonPath("$.age", is(5)))
+                .andExpect(jsonPath("$.size", is("Large")))
+                .andExpect(jsonPath("$.status", is("AVAILABLE")));
+    }
+
+    @Test
+    void getDogById_ShouldReturn404_WhenDogNotFound() throws Exception {
+        // Arrange
+        String nonExistentId = "00000000-0000-0000-0000-000000000000";
+
+        // Act & Assert
+        mockMvc.perform(get("/api/dogs/{id}", nonExistentId))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message", containsString("Dog not found")));
+    }
+
+    @Test
+    void filterDogs_ShouldReturnFilteredDogs_WhenFilterApplied() throws Exception {
+        // Arrange
+        createTestDog("Buddy", "Male", 3, "Medium");
+        createTestDog("Luna", "Female", 2, "Small");
+        createTestDog("Max", "Male", 5, "Large");
+
+        // Act & Assert - Filter by gender
+        mockMvc.perform(get("/api/dogs/filter")
+                .param("gender", "Male"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(2)))
+                .andExpect(jsonPath("$.content[*].gender", everyItem(is("Male"))));
+    }
+
+    // ==================== ADMIN ENDPOINTS TESTS ====================
+
+    @Test
+    void createDog_ShouldCreateDog_WhenValidDataAndAdminToken() throws Exception {
+        // Arrange
+        DogRequest request = DogRequest.builder()
+                .name("Charlie")
+                .story("A friendly and playful dog looking for a home")
+                .gender("Male")
+                .age(4)
+                .size("Medium")
+                .photoUrl("https://example.com/charlie.jpg")
+                .status(DogStatus.AVAILABLE)
+                .build();
+
+        // Act & Assert
+        MvcResult result = mockMvc.perform(post("/api/dogs")
+                .header("Authorization", "Bearer " + adminToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.name", is("Charlie")))
+                .andExpect(jsonPath("$.gender", is("Male")))
+                .andExpect(jsonPath("$.age", is(4)))
+                .andExpect(jsonPath("$.status", is("AVAILABLE")))
+                .andReturn();
+
+        // Verify in database
+        String responseBody = result.getResponse().getContentAsString();
+        DogResponse createdDog = objectMapper.readValue(responseBody, DogResponse.class);
+        
+        Dog dogInDb = dogRepository.findById(createdDog.getId()).orElse(null);
+        assertThat(dogInDb).isNotNull();
+        assertThat(dogInDb.getName()).isEqualTo("Charlie");
+    }
+
+    @Test
+    void createDog_ShouldReturn401_WhenNoToken() throws Exception {
+        // Arrange
+        DogRequest request = DogRequest.builder()
+                .name("Charlie")
+                .gender("Male")
+                .age(4)
+                .size("Medium")
+                .build();
+
+        // Act & Assert
+        mockMvc.perform(post("/api/dogs")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void createDog_ShouldReturn400_WhenInvalidData() throws Exception {
+        // Arrange - Invalid data (age too high)
+        DogRequest request = DogRequest.builder()
+                .name("Charlie")
+                .gender("Male")
+                .age(50)  // Invalid: max is 30
+                .size("Medium")
+                .build();
+
+        // Act & Assert
+        mockMvc.perform(post("/api/dogs")
+                .header("Authorization", "Bearer " + adminToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error", is("Validation Failed")))
+                .andExpect(jsonPath("$.details", not(empty())));
+    }
+
+    @Test
+    void updateDog_ShouldUpdateDog_WhenValidDataAndAdminToken() throws Exception {
+        // Arrange
+        Dog existingDog = createTestDog("Buddy", "Male", 3, "Medium");
+        
+        DogRequest updateRequest = DogRequest.builder()
+                .name("Buddy Updated")
+                .age(4)
+                .status(DogStatus.IN_PROCESS)
+                .build();
+
+        // Act & Assert
+        mockMvc.perform(put("/api/dogs/{id}", existingDog.getId())
+                .header("Authorization", "Bearer " + adminToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name", is("Buddy Updated")))
+                .andExpect(jsonPath("$.age", is(4)))
+                .andExpect(jsonPath("$.status", is("IN_PROCESS")));
+
+        // Verify in database
+        Dog updatedDog = dogRepository.findById(existingDog.getId()).orElse(null);
+        assertThat(updatedDog).isNotNull();
+        assertThat(updatedDog.getName()).isEqualTo("Buddy Updated");
+        assertThat(updatedDog.getAge()).isEqualTo(4);
+        assertThat(updatedDog.getStatus()).isEqualTo(DogStatus.IN_PROCESS);
+    }
+
+    @Test
+    void updateDog_ShouldReturn404_WhenDogNotFound() throws Exception {
+        // Arrange
+        String nonExistentId = "00000000-0000-0000-0000-000000000000";
+        DogRequest updateRequest = DogRequest.builder()
+                .name("Updated")
+                .build();
+
+        // Act & Assert
+        mockMvc.perform(put("/api/dogs/{id}", nonExistentId)
+                .header("Authorization", "Bearer " + adminToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateRequest)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void deleteDog_ShouldDeleteDog_WhenDogExistsAndAdminToken() throws Exception {
+        // Arrange
+        Dog dog = createTestDog("ToDelete", "Male", 2, "Small");
+
+        // Act & Assert
+        mockMvc.perform(delete("/api/dogs/{id}", dog.getId())
+                .header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isNoContent());
+
+        // Verify in database
+        boolean exists = dogRepository.existsById(dog.getId());
+        assertThat(exists).isFalse();
+    }
+
+    @Test
+    void deleteDog_ShouldReturn404_WhenDogNotFound() throws Exception {
+        // Arrange
+        String nonExistentId = "00000000-0000-0000-0000-000000000000";
+
+        // Act & Assert
+        mockMvc.perform(delete("/api/dogs/{id}", nonExistentId)
+                .header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void deleteDog_ShouldReturn401_WhenNoToken() throws Exception {
+        // Arrange
+        Dog dog = createTestDog("ToDelete", "Male", 2, "Small");
+
+        // Act & Assert
+        mockMvc.perform(delete("/api/dogs/{id}", dog.getId()))
+                .andExpect(status().isUnauthorized());
+    }
+
+    // ==================== COMPLETE WORKFLOW TEST ====================
+
+    @Test
+    void completeWorkflow_CreateUpdateAndDeleteDog() throws Exception {
+        // Step 1: Create a dog
+        DogRequest createRequest = DogRequest.builder()
+                .name("Workflow Test Dog")
+                .story("Testing complete workflow")
+                .gender("Female")
+                .age(3)
+                .size("Medium")
+                .photoUrl("https://example.com/test.jpg")
+                .status(DogStatus.AVAILABLE)
+                .build();
+
+        MvcResult createResult = mockMvc.perform(post("/api/dogs")
+                .header("Authorization", "Bearer " + adminToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createRequest)))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        DogResponse createdDog = objectMapper.readValue(
+                createResult.getResponse().getContentAsString(), 
+                DogResponse.class
+        );
+
+        // Step 2: Verify dog exists
+        mockMvc.perform(get("/api/dogs/{id}", createdDog.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name", is("Workflow Test Dog")));
+
+        // Step 3: Update the dog
+        DogRequest updateRequest = DogRequest.builder()
+                .name("Updated Workflow Dog")
+                .age(4)
+                .build();
+
+        mockMvc.perform(put("/api/dogs/{id}", createdDog.getId())
+                .header("Authorization", "Bearer " + adminToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name", is("Updated Workflow Dog")))
+                .andExpect(jsonPath("$.age", is(4)));
+
+        // Step 4: Delete the dog
+        mockMvc.perform(delete("/api/dogs/{id}", createdDog.getId())
+                .header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isNoContent());
+
+        // Step 5: Verify dog is deleted
+        mockMvc.perform(get("/api/dogs/{id}", createdDog.getId()))
+                .andExpect(status().isNotFound());
+    }
+
+    // ==================== PAGINATION TEST ====================
+
+    @Test
+    void getAllDogs_ShouldReturnPaginatedResults() throws Exception {
+        // Arrange - Create 15 dogs
+        for (int i = 1; i <= 15; i++) {
+            createTestDog("Dog " + i, "Male", i % 10, "Medium");
+        }
+
+        // Act & Assert - First page
+        mockMvc.perform(get("/api/dogs")
+                .param("page", "0")
+                .param("size", "10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(10)))
+                .andExpect(jsonPath("$.totalElements", is(15)))
+                .andExpect(jsonPath("$.totalPages", is(2)))
+                .andExpect(jsonPath("$.number", is(0)));
+
+        // Second page
+        mockMvc.perform(get("/api/dogs")
+                .param("page", "1")
+                .param("size", "10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(5)))
+                .andExpect(jsonPath("$.totalElements", is(15)))
+                .andExpect(jsonPath("$.number", is(1)));
+    }
+
+    // ==================== HELPER METHODS ====================
+
+    /**
+     * Helper method to create a test dog in the database
+     */
+    private Dog createTestDog(String name, String gender, Integer age, String size) {
+        Dog dog = Dog.builder()
+                .name(name)
+                .story("Test story for " + name)
+                .gender(gender)
+                .age(age)
+                .size(size)
+                .photoUrl("https://example.com/" + name.toLowerCase() + ".jpg")
+                .status(DogStatus.AVAILABLE)
+                .build();
+        
+        return dogRepository.save(dog);
+    }
+}
