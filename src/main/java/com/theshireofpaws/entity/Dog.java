@@ -1,5 +1,7 @@
 package com.theshireofpaws.entity;
 
+import com.theshireofpaws.entity.enums.DogGender;
+import com.theshireofpaws.entity.enums.DogSize;
 import com.theshireofpaws.entity.enums.DogStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -30,14 +32,16 @@ public class Dog {
     @Column(columnDefinition = "TEXT")
     private String story;
     
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String gender;
+    private DogGender gender;  
     
     @Column(nullable = false)
     private Integer age;
     
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String size;
+    private DogSize size;
     
     @Column(name = "photo_url")
     private String photoUrl;
@@ -46,6 +50,10 @@ public class Dog {
     @Column(nullable = false)
     @Builder.Default
     private DogStatus status = DogStatus.AVAILABLE;
+    
+    // ⭐⭐⭐ NUEVO: Nombre del adoptante
+    @Column(name = "adopted_by")
+    private String adoptedBy;
     
     @OneToMany(mappedBy = "dog", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default

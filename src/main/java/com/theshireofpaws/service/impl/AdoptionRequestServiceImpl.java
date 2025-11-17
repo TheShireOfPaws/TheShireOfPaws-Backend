@@ -56,7 +56,6 @@ public class AdoptionRequestServiceImpl implements AdoptionRequestService {
         Dog dog = dogRepository.findById(request.getDogId())
             .orElseThrow(() -> new ResourceNotFoundException("Dog", "id", request.getDogId()));
         
-
         if (dog.getStatus() == DogStatus.ADOPTED) {
             throw new BadRequestException("This dog has already been adopted");
         }
@@ -65,7 +64,6 @@ public class AdoptionRequestServiceImpl implements AdoptionRequestService {
         adoptionRequest.setDog(dog);
         adoptionRequest.setStatus(AdoptionStatus.IN_PROCESS);
         
-
         if (dog.getStatus() == DogStatus.AVAILABLE) {
             dog.setStatus(DogStatus.IN_PROCESS);
             dogRepository.save(dog);
@@ -85,11 +83,11 @@ public class AdoptionRequestServiceImpl implements AdoptionRequestService {
         
         Dog dog = request.getDog();
         
-
         if (status == AdoptionStatus.APPROVED) {
             dog.setStatus(DogStatus.ADOPTED);
             
-
+            dog.setAdoptedBy(request.getRequesterName());
+            
             requestRepository.findByDogAndStatus(dog, AdoptionStatus.IN_PROCESS)
                 .stream()
                 .filter(r -> !r.getId().equals(id))
@@ -100,9 +98,10 @@ public class AdoptionRequestServiceImpl implements AdoptionRequestService {
                 .stream()
                 .filter(r -> !r.getId().equals(id))
                 .count();
-
+            
             if (pendingCount == 0) {
                 dog.setStatus(DogStatus.AVAILABLE);
+                dog.setAdoptedBy(null);  
             }
         }
         

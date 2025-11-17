@@ -1,6 +1,7 @@
 package com.theshireofpaws.entity;
 
 import com.theshireofpaws.entity.enums.AdoptionStatus;
+import com.theshireofpaws.entity.enums.HousingType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,8 +29,9 @@ public class AdoptionRequest {
     @Column(name = "requester_email", nullable = false)
     private String requesterEmail;
     
+    @Enumerated(EnumType.STRING)  
     @Column(name = "housing_type", nullable = false)
-    private String housingType;
+    private HousingType housingType;
     
     @Column(name = "household_size", nullable = false)
     private Integer householdSize;

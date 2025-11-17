@@ -1,5 +1,6 @@
 package com.theshireofpaws.dto.request;
 
+import com.theshireofpaws.entity.enums.HousingType;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,13 +23,12 @@ public class AdoptionRequestRequest {
     @Email(message = "Email must be valid")
     private String requesterEmail;
     
-    @NotBlank(message = "Housing type is required")
-    @Pattern(regexp = "House|Apartment|Other", message = "Housing type must be House, Apartment, or Other")
-    private String housingType;
+    @NotNull(message = "Housing type is required")
+    private HousingType housingType; 
     
     @NotNull(message = "Household size is required")
     @Min(value = 1, message = "Household size must be at least 1")
-    @Max(value = 8, message = "Household size cannot exceed 8")
+    @Max(value = 20, message = "Household size cannot exceed 20")
     private Integer householdSize;
     
     @NotBlank(message = "Motivation is required")
