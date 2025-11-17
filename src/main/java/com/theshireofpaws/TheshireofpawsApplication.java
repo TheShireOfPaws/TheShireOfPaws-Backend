@@ -17,7 +17,7 @@ public class TheshireofpawsApplication {
             "║  H2 Console:    http://localhost:8080/h2-console      ║\n" +
             "║                                                       ║\n" +
             "║  Admin Login:                                         ║\n" +
-            "║  Email:    admin@dogadoption.com                      ║\n" +
+            "║  Email:    admin@theshireofpaws.com                   ║\n" +
             "║  Password: admin123                                   ║\n" +
             "║                                                       ║\n" +
             "╚═══════════════════════════════════════════════════════╝\n"
