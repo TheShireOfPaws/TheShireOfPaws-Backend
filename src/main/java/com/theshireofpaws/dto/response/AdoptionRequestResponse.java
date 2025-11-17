@@ -1,6 +1,7 @@
 package com.theshireofpaws.dto.response;
 
 import com.theshireofpaws.entity.enums.AdoptionStatus;
+import com.theshireofpaws.entity.enums.HousingType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,25 +17,26 @@ import java.util.UUID;
 public class AdoptionRequestResponse {
     
     private UUID id;
-    private String requesterName;
+    
+    private String requesterFirstName;
+    private String requesterLastName;
     private String requesterEmail;
-    private String housingType;
+    
+    private HousingType housingType;
     private Integer householdSize;
     private String motivation;
     private String daytimeLocation;
+    
     private AdoptionStatus status;
     
-
     private UUID dogId;
     private String dogName;
     private String dogPhotoUrl;
     
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    
+    public String getFullName() {
+        return requesterFirstName + " " + requesterLastName;
+    }
 }
-
-
-
-
-
-

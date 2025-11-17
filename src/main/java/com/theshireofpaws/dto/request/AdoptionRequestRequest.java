@@ -15,16 +15,20 @@ import java.util.UUID;
 @Builder
 public class AdoptionRequestRequest {
     
-    @NotBlank(message = "Requester name is required")
-    @Size(min = 2, max = 100, message = "Name must be between 2 and 100 characters")
-    private String requesterName;
+    @NotBlank(message = "First name is required")
+    @Size(min = 2, max = 50, message = "First name must be between 2 and 50 characters")
+    private String requesterFirstName;
+    
+    @NotBlank(message = "Last name is required")
+    @Size(min = 2, max = 50, message = "Last name must be between 2 and 50 characters")
+    private String requesterLastName;
     
     @NotBlank(message = "Email is required")
     @Email(message = "Email must be valid")
     private String requesterEmail;
     
     @NotNull(message = "Housing type is required")
-    private HousingType housingType; 
+    private HousingType housingType;
     
     @NotNull(message = "Household size is required")
     @Min(value = 1, message = "Household size must be at least 1")

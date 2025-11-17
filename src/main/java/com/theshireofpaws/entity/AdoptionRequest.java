@@ -23,13 +23,16 @@ public class AdoptionRequest {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
     
-    @Column(name = "requester_name", nullable = false)
-    private String requesterName;
+    @Column(name = "requester_first_name", nullable = false)
+    private String requesterFirstName;
+    
+    @Column(name = "requester_last_name", nullable = false)
+    private String requesterLastName;
     
     @Column(name = "requester_email", nullable = false)
     private String requesterEmail;
     
-    @Enumerated(EnumType.STRING)  
+    @Enumerated(EnumType.STRING)
     @Column(name = "housing_type", nullable = false)
     private HousingType housingType;
     
@@ -69,5 +72,9 @@ public class AdoptionRequest {
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+    
+    public String getFullName() {
+        return requesterFirstName + " " + requesterLastName;
     }
 }

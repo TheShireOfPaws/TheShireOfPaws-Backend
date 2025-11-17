@@ -56,6 +56,7 @@ public class AdoptionRequestServiceImpl implements AdoptionRequestService {
         Dog dog = dogRepository.findById(request.getDogId())
             .orElseThrow(() -> new ResourceNotFoundException("Dog", "id", request.getDogId()));
         
+        // Validate dog is available
         if (dog.getStatus() == DogStatus.ADOPTED) {
             throw new BadRequestException("This dog has already been adopted");
         }
@@ -64,6 +65,7 @@ public class AdoptionRequestServiceImpl implements AdoptionRequestService {
         adoptionRequest.setDog(dog);
         adoptionRequest.setStatus(AdoptionStatus.IN_PROCESS);
         
+        // Update dog status to IN_PROCESS if it was AVAILABLE
         if (dog.getStatus() == DogStatus.AVAILABLE) {
             dog.setStatus(DogStatus.IN_PROCESS);
             dogRepository.save(dog);
@@ -83,25 +85,31 @@ public class AdoptionRequestServiceImpl implements AdoptionRequestService {
         
         Dog dog = request.getDog();
         
+        // When approved, save full name of adopter in dog
         if (status == AdoptionStatus.APPROVED) {
+            // Mark dog as adopted
             dog.setStatus(DogStatus.ADOPTED);
             
-            dog.setAdoptedBy(request.getRequesterName());
+            // Save adopter's full name (uses helper method)
+            dog.setAdoptedBy(request.getFullName());
             
+            // Deny all other pending requests for this dog
             requestRepository.findByDogAndStatus(dog, AdoptionStatus.IN_PROCESS)
                 .stream()
                 .filter(r -> !r.getId().equals(id))
                 .forEach(r -> r.setStatus(AdoptionStatus.DENIED));
             
         } else if (status == AdoptionStatus.DENIED && oldStatus == AdoptionStatus.IN_PROCESS) {
+            // Check if there are other pending requests
             long pendingCount = requestRepository.findByDogAndStatus(dog, AdoptionStatus.IN_PROCESS)
                 .stream()
                 .filter(r -> !r.getId().equals(id))
                 .count();
             
+            // If no other pending requests, mark dog as available
             if (pendingCount == 0) {
                 dog.setStatus(DogStatus.AVAILABLE);
-                dog.setAdoptedBy(null);  
+                dog.setAdoptedBy(null);
             }
         }
         
