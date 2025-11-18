@@ -18,7 +18,7 @@ Clone the repository and navigate to the backend directory.
 
 ```bash
 # Clone the repository
-git clone [(https://github.com/TheShireOfPaws/TheShireOfPaws-Backend)]
+git clone (https://github.com/TheShireOfPaws/TheShireOfPaws-Backend)
 cd the-shire-of-paws/backend
 ```
 ### 🛠️ Tech Stack
