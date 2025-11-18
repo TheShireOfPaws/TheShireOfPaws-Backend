@@ -2,6 +2,8 @@ package com.theshireofpaws.controller;
 
 import com.theshireofpaws.dto.request.DogRequest;
 import com.theshireofpaws.dto.response.DogResponse;
+import com.theshireofpaws.entity.enums.DogGender; 
+import com.theshireofpaws.entity.enums.DogSize;
 import com.theshireofpaws.entity.enums.DogStatus;
 import com.theshireofpaws.service.interfaces.DogService;
 import jakarta.validation.Valid;
@@ -13,6 +15,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -49,8 +53,8 @@ public class DogController {
     public ResponseEntity<Page<DogResponse>> filterDogs(
             @RequestParam(required = false) DogStatus status,
             @RequestParam(required = false) String name,
-            @RequestParam(required = false) String gender,
-            @RequestParam(required = false) String size,
+            @RequestParam(required = false) DogGender gender,
+            @RequestParam(required = false) DogSize size,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "12") int pageSize) {
         
@@ -79,6 +83,27 @@ public class DogController {
     public ResponseEntity<Void> deleteDog(@PathVariable UUID id) {
         dogService.deleteDog(id);
         return ResponseEntity.noContent().build();
+    }
+    
+
+    @GetMapping("/stats")
+    public ResponseEntity<Map<String, Long>> getStats() {
+        Map<String, Long> stats = new HashMap<>();
+        
+
+        long totalDogs = dogService.count();
+        
+    
+        long adoptedDogs = dogService.countByStatus(DogStatus.ADOPTED);
+        
+
+        long availableDogs = dogService.countByStatus(DogStatus.AVAILABLE);
+        
+        stats.put("rescued", totalDogs);
+        stats.put("adopted", adoptedDogs);
+        stats.put("available", availableDogs);
+        
+        return ResponseEntity.ok(stats);
     }
     
     @GetMapping("/stats/count-by-status")

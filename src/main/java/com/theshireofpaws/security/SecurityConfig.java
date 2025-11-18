@@ -30,7 +30,7 @@ public class SecurityConfig {
         JWTAuthenticationFilter authenticationFilter = new JWTAuthenticationFilter(authenticationManager);
         
         http
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))  // ⭐ AÑADIDO
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))  
             .csrf(csrf -> csrf.disable())
             .headers(headers -> headers.frameOptions(frame -> frame.disable()))
             .authorizeHttpRequests(auth -> auth

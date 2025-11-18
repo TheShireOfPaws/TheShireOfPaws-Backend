@@ -2,6 +2,8 @@ package com.theshireofpaws.service.interfaces;
 
 import com.theshireofpaws.dto.request.DogRequest;
 import com.theshireofpaws.dto.response.DogResponse;
+import com.theshireofpaws.entity.enums.DogGender;
+import com.theshireofpaws.entity.enums.DogSize;
 import com.theshireofpaws.entity.enums.DogStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,7 +22,9 @@ public interface DogService {
     
     void deleteDog(UUID id);
     
-    Page<DogResponse> filterDogs(DogStatus status, String name, String gender, String size, Pageable pageable);
+    Page<DogResponse> filterDogs(DogStatus status, String name, DogGender gender, DogSize size, Pageable pageable);
     
     long countByStatus(DogStatus status);
+
+    long count();
 }

@@ -3,6 +3,8 @@ package com.theshireofpaws.service.impl;
 import com.theshireofpaws.dto.request.DogRequest;
 import com.theshireofpaws.dto.response.DogResponse;
 import com.theshireofpaws.entity.Dog;
+import com.theshireofpaws.entity.enums.DogGender;
+import com.theshireofpaws.entity.enums.DogSize;
 import com.theshireofpaws.entity.enums.DogStatus;
 import com.theshireofpaws.exception.ResourceNotFoundException;
 import com.theshireofpaws.mapper.DogMapper;
@@ -76,7 +78,7 @@ public class DogServiceImpl implements DogService {
     
     @Override
     @Transactional(readOnly = true)
-    public Page<DogResponse> filterDogs(DogStatus status, String name, String gender, String size, Pageable pageable) {
+    public Page<DogResponse> filterDogs(DogStatus status, String name, DogGender gender, DogSize size, Pageable pageable) {
         return dogRepository.findByFilters(status, name, gender, size, pageable)
             .map(dogMapper::toResponse);
     }
@@ -86,4 +88,9 @@ public class DogServiceImpl implements DogService {
     public long countByStatus(DogStatus status) {
         return dogRepository.countByStatus(status);
     }
+
+        @Override
+    public long count() {
+        return dogRepository.count();
+}
 }
