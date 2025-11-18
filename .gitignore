@@ -81,8 +81,8 @@ Thumbs.db
 ehthumbs.db
 
 # Application properties (sensitive data)
-application-prod.properties
-application-local.properties
+application-postgres.properties
+application.properties
 
 # H2 Database
 *.db
