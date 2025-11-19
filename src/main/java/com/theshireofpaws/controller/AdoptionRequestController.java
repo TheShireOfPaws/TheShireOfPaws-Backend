@@ -75,7 +75,6 @@ public class AdoptionRequestController {
     @PostMapping
     public ResponseEntity<AdoptionRequestResponse> createRequest(
             @Valid @RequestBody AdoptionRequestRequest request) {
-        
         AdoptionRequestResponse newRequest = requestService.createRequest(request);
         return new ResponseEntity<>(newRequest, HttpStatus.CREATED);
     }

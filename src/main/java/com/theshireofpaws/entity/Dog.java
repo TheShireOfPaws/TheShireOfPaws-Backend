@@ -51,7 +51,6 @@ public class Dog {
     @Builder.Default
     private DogStatus status = DogStatus.AVAILABLE;
     
-    // ⭐⭐⭐ NUEVO: Nombre del adoptante
     @Column(name = "adopted_by")
     private String adoptedBy;
     

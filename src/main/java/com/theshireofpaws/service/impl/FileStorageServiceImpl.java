@@ -34,25 +34,22 @@ public class FileStorageServiceImpl implements FileStorageService {
     
     @Override
     public String storeFile(MultipartFile file) {
-        // Validar que el archivo no esté vacío
         if (file.isEmpty()) {
             throw new BadRequestException("Failed to store empty file");
         }
         
-        // Obtener el nombre original del archivo
+     
         String originalFileName = StringUtils.cleanPath(file.getOriginalFilename());
         
-        // Validar extensión del archivo
+       
         String fileExtension = getFileExtension(originalFileName);
         if (!isValidImageExtension(fileExtension)) {
             throw new BadRequestException("Only image files are allowed (jpg, jpeg, png, gif, webp)");
         }
         
         try {
-            // Generar nombre único para el archivo
             String fileName = UUID.randomUUID().toString() + "." + fileExtension;
             
-            // Copiar archivo al directorio de almacenamiento
             Path targetLocation = this.fileStorageLocation.resolve(fileName);
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
             

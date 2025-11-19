@@ -30,7 +30,6 @@ public class DataSeeder implements CommandLineRunner {
     
     @Override
     public void run(String... args) throws Exception {
-        // Seed Admin User
         if (adminUserRepository.count() == 0) {
             AdminUser admin = AdminUser.builder()
                 .email("admin@theshireofpaws.com")
@@ -41,7 +40,6 @@ public class DataSeeder implements CommandLineRunner {
             System.out.println("Admin user created: admin@theshireofpaws.com / admin123");
         }
         
-        // Seed Dogs
         if (dogRepository.count() == 0) {
             Dog rover = Dog.builder()
                 .name("Rover")

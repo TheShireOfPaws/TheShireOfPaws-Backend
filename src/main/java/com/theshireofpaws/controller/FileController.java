@@ -23,9 +23,6 @@ public class FileController {
         this.fileStorageService = fileStorageService;
     }
     
-    /**
-     * Upload a file (image)
-     */
     @PostMapping("/upload")
     public ResponseEntity<Map<String, String>> uploadFile(@RequestParam("file") MultipartFile file) {
         String fileName = fileStorageService.storeFile(file);
@@ -41,9 +38,6 @@ public class FileController {
         return ResponseEntity.ok(response);
     }
     
-    /**
-     * Download a file (image)
-     */
     @GetMapping("/download/{fileName:.+}")
     public ResponseEntity<Resource> downloadFile(@PathVariable String fileName, 
                                                  HttpServletRequest request) {
@@ -66,9 +60,6 @@ public class FileController {
                 .body(resource);
     }
     
-    /**
-     * Delete a file
-     */
     @DeleteMapping("/{fileName:.+}")
     public ResponseEntity<Map<String, String>> deleteFile(@PathVariable String fileName) {
         fileStorageService.deleteFile(fileName);
