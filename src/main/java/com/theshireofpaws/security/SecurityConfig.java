@@ -2,6 +2,7 @@ package com.theshireofpaws.security;
 
 import com.theshireofpaws.security.filter.JWTAuthenticationFilter;
 import com.theshireofpaws.security.filter.JWTAuthorizationFilter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -19,7 +20,10 @@ import java.util.Arrays;
 public class SecurityConfig {
     
     private final CustomAuthenticationManager authenticationManager;
-    
+
+    @Value("${app.cors.allowed-origins}")
+    private String allowedOrigins;
+
     public SecurityConfig(CustomAuthenticationManager authenticationManager) {
         this.authenticationManager = authenticationManager;
     }
@@ -39,9 +43,8 @@ public class SecurityConfig {
                 
                 .requestMatchers("/api/auth/**").permitAll()
                 
-                .requestMatchers(HttpMethod.GET, "/api/files/download/**").permitAll()     // ⭐ Ver imágenes (público)
                 .requestMatchers(HttpMethod.POST, "/api/files/upload").hasRole("ADMIN")    // Subir (admin)
-                .requestMatchers(HttpMethod.DELETE, "/api/files/**").hasRole("ADMIN")      // Eliminar (admin)
+                .requestMatchers(HttpMethod.DELETE, "/api/files").hasRole("ADMIN")         // Eliminar (admin)
                 
                
                 .requestMatchers(HttpMethod.GET, "/api/dogs/**").permitAll()
@@ -69,13 +72,8 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        
-     
-        configuration.setAllowedOrigins(Arrays.asList(
-            "http://localhost:5173",
-            "http://localhost:5174",
-            "http://localhost:3000"
-        ));
+
+        configuration.setAllowedOrigins(Arrays.asList(allowedOrigins.split(",")));
         
      
         configuration.setAllowedMethods(Arrays.asList(

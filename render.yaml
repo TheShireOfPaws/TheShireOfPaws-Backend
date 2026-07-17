@@ -1,0 +1,46 @@
+databases:
+  - name: theshireofpaws-db
+    databaseName: theshireofpaws
+    user: theshireofpaws
+    plan: free
+
+services:
+  - type: web
+    name: theshireofpaws-backend
+    env: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/dogs
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: postgres
+      - key: DB_HOST
+        fromDatabase:
+          name: theshireofpaws-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: theshireofpaws-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: theshireofpaws-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: theshireofpaws-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: theshireofpaws-db
+          property: password
+      - key: JWT_SECRET
+        generateValue: true
+      - key: APP_CORS_ALLOWED_ORIGINS
+        value: http://localhost:5173,http://localhost:3000
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false

@@ -11,6 +11,7 @@ Backend API for The Shire Of Paws dog adoption management system built with Spri
 - [API Endpoints](#api-endpoints)
 - [Testing](#testing)
 - [Database](#database)
+- [Deployment](#deployment-render)
 - [Security](#security)
 
 ## ✨ Features
@@ -26,6 +27,8 @@ Backend API for The Shire Of Paws dog adoption management system built with Spri
 - ✅ Unit tests with JUnit and Mockito
 - ✅ H2 database for development
 - ✅ PostgreSQL support for production
+- ✅ Cloud image storage for dog photos (Cloudinary)
+- ✅ Docker-based deployment (Render-ready)
 
 ## 🛠 Tech Stack
 
@@ -37,6 +40,8 @@ Backend API for The Shire Of Paws dog adoption management system built with Spri
 - **Lombok** - Boilerplate reduction
 - **H2 Database** - Development
 - **PostgreSQL** - Production
+- **Cloudinary** - Image storage (dog photos)
+- **Docker** - Containerized deployment
 - **JUnit 5 & Mockito** - Testing
 - **Maven** - Build tool
 
@@ -119,8 +124,29 @@ theshireofpaws-backend/
 ### Prerequisites
 
 - Java 21 or higher
-- Maven 3.8+
-- (Optional) PostgreSQL 15+ for production
+- Maven 3.8+ (or use the bundled `./mvnw` wrapper)
+- PostgreSQL 15+ — the app runs with the `postgres` profile active by default (see `application.properties`), it does **not** fall back to H2 automatically
+- A free [Cloudinary](https://cloudinary.com) account (for dog photo uploads)
+
+### Environment Variables
+
+The app needs these to start. There is no fallback storage — without valid Postgres and Cloudinary credentials, startup fails.
+
+| Variable | Description | Default (if any) |
+|----------|-------------|-------------------|
+| `DB_HOST` | PostgreSQL host | `localhost` |
+| `DB_PORT` | PostgreSQL port | `5432` |
+| `DB_NAME` | PostgreSQL database name | `theshireofpaws` |
+| `DB_USER` | PostgreSQL username | `postgres` |
+| `DB_PASSWORD` | PostgreSQL password | *(required)* |
+| `CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name | *(required)* |
+| `CLOUDINARY_API_KEY` | Cloudinary API key | *(required)* |
+| `CLOUDINARY_API_SECRET` | Cloudinary API secret | *(required)* |
+| `JWT_SECRET` | Secret used to sign JWTs | built-in fallback (change it for production) |
+| `PORT` | Port the server listens on | `8080` |
+| `APP_CORS_ALLOWED_ORIGINS` | Comma-separated list of allowed frontend origins | `http://localhost:5173,http://localhost:5174,http://localhost:3000` |
+
+Get the three `CLOUDINARY_*` values from your Cloudinary Dashboard → **Settings → API Keys**.
 
 ### Installation
 
@@ -130,12 +156,14 @@ git clone
 cd theshireofpaws-backend
 ```
 
-2. **Build the project**
+2. **Set the required environment variables** (see table above), at minimum `DB_PASSWORD`, `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY` and `CLOUDINARY_API_SECRET`.
+
+3. **Build the project**
 ```bash
 mvn clean install
 ```
 
-3. **Run the application**
+4. **Run the application**
 ```bash
 mvn spring-boot:run
 ```
@@ -229,6 +257,36 @@ Content-Type: application/json
 #### Delete Dog (Admin Only)
 ```http
 DELETE /api/dogs/{id}
+Authorization: Bearer {token}
+```
+
+### Dog Photos
+
+Photos are uploaded to Cloudinary; the response and stored `photoUrl` are always a full, public Cloudinary URL.
+
+#### Upload a Photo (Admin Only)
+```http
+POST /api/files/upload
+Authorization: Bearer {token}
+Content-Type: multipart/form-data
+
+file: <image file> (jpg, jpeg, png, gif or webp, max 10MB)
+```
+
+**Response:**
+```json
+{
+  "fileDownloadUri": "https://res.cloudinary.com/<cloud_name>/image/upload/v.../theshireofpaws/dogs/<id>.jpg",
+  "fileType": "image/jpeg",
+  "size": "327111"
+}
+```
+
+Use `fileDownloadUri` directly as the `photoUrl` when creating/updating a dog.
+
+#### Delete a Photo (Admin Only)
+```http
+DELETE /api/files?url=https://res.cloudinary.com/<cloud_name>/image/upload/v.../theshireofpaws/dogs/<id>.jpg
 Authorization: Bearer {token}
 ```
 
@@ -332,16 +390,11 @@ spring.datasource.password=
 CREATE DATABASE theshireofpaws;
 ```
 
-2. Update `application-postgres.properties`:
-```properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/theshireofpaws
-spring.datasource.username=your_username
-spring.datasource.password=your_password
-```
+2. Set the `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER` and `DB_PASSWORD` environment variables (see [Environment Variables](#getting-started)) — no need to edit `application-postgres.properties` directly, it reads these at startup.
 
-3. Run with PostgreSQL profile:
+3. Run the application (the `postgres` profile is already active by default):
 ```bash
-mvn spring-boot:run -Dspring-boot.run.profiles=postgres
+mvn spring-boot:run
 ```
 
 ### Entity Relationships
@@ -461,9 +514,21 @@ All exceptions return a consistent error response:
 # Build JAR file
 mvn clean package -DskipTests
 
-# Run JAR
-java -jar target/theshireofpaws-0.0.1-SNAPSHOT.jar --spring.profiles.active=postgres
+# Run JAR (make sure the required environment variables are set, see above)
+java -jar target/dog-adoption-1.0.0.jar
 ```
+
+## 🚢 Deployment (Render)
+
+The repo includes a `Dockerfile` and a `render.yaml` Blueprint, since Render deploys Java apps via Docker (there's no native Maven buildpack).
+
+1. Push the repo to GitHub.
+2. On [Render](https://render.com): **New +** → **Blueprint**, and point it at this repo.
+3. Render reads `render.yaml` and provisions a PostgreSQL database plus the web service together, wiring `DB_HOST`/`DB_PORT`/`DB_NAME`/`DB_USER`/`DB_PASSWORD` and generating `JWT_SECRET` automatically.
+4. You'll be prompted for the three `CLOUDINARY_*` values (not stored in the repo — add them from your Cloudinary Dashboard).
+5. Once your frontend is deployed, update the `APP_CORS_ALLOWED_ORIGINS` environment variable on the web service with its URL.
+
+Dog photos are stored on Cloudinary, not on local disk — this matters because Render's filesystem is ephemeral and would otherwise wipe uploads on every redeploy.
 
 ## 🤝 Contributing
 
