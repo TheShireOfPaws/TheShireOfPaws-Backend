@@ -29,6 +29,7 @@ public class DogResponse {
     private DogStatus status;
     private String adoptedBy;  
     private List<DogTrait> traits;
+    private List<String> extraPhotoUrls;
     private Integer adoptionRequestsCount;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

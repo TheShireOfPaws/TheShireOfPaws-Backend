@@ -10,6 +10,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -43,4 +44,8 @@ public class DogRequest {
     
     // null = keep the current traits; empty = remove them all
     private Set<DogTrait> traits;
+    
+    // Up to 2 photos besides photoUrl. null = keep the current ones; empty = remove them all
+    @Size(max = 2, message = "A dog can have up to 2 extra photos")
+    private List<@NotBlank(message = "Photo URL cannot be blank") @Size(max = 500, message = "Photo URL cannot exceed 500 characters") String> extraPhotoUrls;
 }

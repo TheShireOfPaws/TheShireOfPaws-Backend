@@ -64,6 +64,14 @@ public class Dog {
     @Builder.Default
     private Set<DogTrait> traits = new HashSet<>();
     
+    // Photos shown after photoUrl (the main one), in order
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "dog_photos", joinColumns = @JoinColumn(name = "dog_id"))
+    @OrderColumn(name = "position")
+    @Column(name = "url", nullable = false, length = 500)
+    @Builder.Default
+    private List<String> extraPhotoUrls = new ArrayList<>();
+    
     @OneToMany(mappedBy = "dog", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<AdoptionRequest> adoptionRequests = new ArrayList<>();
