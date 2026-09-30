@@ -5,12 +5,15 @@ import com.theshireofpaws.entity.Dog;
 import com.theshireofpaws.entity.enums.DogGender;  
 import com.theshireofpaws.entity.enums.DogSize;    
 import com.theshireofpaws.entity.enums.DogStatus;
+import com.theshireofpaws.entity.enums.DogTrait;
 import com.theshireofpaws.repository.AdminUserRepository;
 import com.theshireofpaws.repository.DogRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
+
+import java.util.EnumSet;
 
 @Component
 @Profile("!test")  
@@ -49,6 +52,7 @@ public class DataSeeder implements CommandLineRunner {
                 .size(DogSize.MEDIUM)         
                 .photoUrl("https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=400")
                 .status(DogStatus.IN_PROCESS)
+                .traits(EnumSet.of(DogTrait.ACTIVE, DogTrait.GOOD_WITH_KIDS, DogTrait.GOOD_WITH_DOGS))
                 .build();
             
             Dog moon = Dog.builder()
@@ -59,6 +63,7 @@ public class DataSeeder implements CommandLineRunner {
                 .size(DogSize.LARGE)           
                 .photoUrl("https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=400")
                 .status(DogStatus.AVAILABLE)
+                .traits(EnumSet.of(DogTrait.CALM, DogTrait.AFFECTIONATE))
                 .build();
             
             Dog kika = Dog.builder()
@@ -69,6 +74,7 @@ public class DataSeeder implements CommandLineRunner {
                 .size(DogSize.SMALL)           
                 .photoUrl("https://images.unsplash.com/photo-1561037404-61cd46aa615b?w=400")
                 .status(DogStatus.ADOPTED)
+                .traits(EnumSet.of(DogTrait.CALM, DogTrait.AFFECTIONATE, DogTrait.HOUSE_TRAINED))
                 .build();
             
             Dog max = Dog.builder()
@@ -79,6 +85,7 @@ public class DataSeeder implements CommandLineRunner {
                 .size(DogSize.LARGE)          
                 .photoUrl("https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=400")
                 .status(DogStatus.AVAILABLE)
+                .traits(EnumSet.of(DogTrait.ACTIVE))
                 .build();
             
             Dog bella = Dog.builder()
@@ -89,6 +96,7 @@ public class DataSeeder implements CommandLineRunner {
                 .size(DogSize.MEDIUM)         
                 .photoUrl("https://images.unsplash.com/photo-1588943211346-0908a1fb0b01?w=400")
                 .status(DogStatus.AVAILABLE)
+                .traits(EnumSet.of(DogTrait.AFFECTIONATE, DogTrait.GOOD_WITH_KIDS))
                 .build();
             
             Dog charlie = Dog.builder()
@@ -99,6 +107,7 @@ public class DataSeeder implements CommandLineRunner {
                 .size(DogSize.LARGE)          
                 .photoUrl("https://images.unsplash.com/photo-1537151608828-ea2b11777ee8?w=400")
                 .status(DogStatus.AVAILABLE)
+                .traits(EnumSet.of(DogTrait.ACTIVE))
                 .build();
             
             dogRepository.save(rover);

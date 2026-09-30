@@ -3,6 +3,7 @@ package com.theshireofpaws.entity;
 import com.theshireofpaws.entity.enums.DogGender;
 import com.theshireofpaws.entity.enums.DogSize;
 import com.theshireofpaws.entity.enums.DogStatus;
+import com.theshireofpaws.entity.enums.DogTrait;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,7 +12,9 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -53,6 +56,13 @@ public class Dog {
     
     @Column(name = "adopted_by")
     private String adoptedBy;
+    
+    @ElementCollection(targetClass = DogTrait.class, fetch = FetchType.EAGER)
+    @CollectionTable(name = "dog_traits", joinColumns = @JoinColumn(name = "dog_id"))
+    @Enumerated(EnumType.STRING)
+    @Column(name = "trait", nullable = false)
+    @Builder.Default
+    private Set<DogTrait> traits = new HashSet<>();
     
     @OneToMany(mappedBy = "dog", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default

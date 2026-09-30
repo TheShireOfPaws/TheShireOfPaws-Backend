@@ -3,7 +3,11 @@ package com.theshireofpaws.mapper;
 import com.theshireofpaws.dto.request.DogRequest;
 import com.theshireofpaws.dto.response.DogResponse;
 import com.theshireofpaws.entity.Dog;
+import com.theshireofpaws.entity.enums.DogTrait;
 import org.mapstruct.*;
+
+import java.util.List;
+import java.util.Set;
 
 @Mapper(
     componentModel = "spring",
@@ -25,4 +29,9 @@ public interface DogMapper {
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     void updateFromRequest(DogRequest request, @MappingTarget Dog dog);
+    
+    // Stable order in the JSON response (enum declaration order)
+    default List<DogTrait> toSortedTraits(Set<DogTrait> traits) {
+        return traits == null ? List.of() : traits.stream().sorted().toList();
+    }
 }

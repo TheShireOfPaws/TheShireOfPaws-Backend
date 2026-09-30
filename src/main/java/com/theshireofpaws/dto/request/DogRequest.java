@@ -3,11 +3,14 @@ package com.theshireofpaws.dto.request;
 import com.theshireofpaws.entity.enums.DogGender;
 import com.theshireofpaws.entity.enums.DogSize;
 import com.theshireofpaws.entity.enums.DogStatus;
+import com.theshireofpaws.entity.enums.DogTrait;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.Set;
 
 @Data
 @AllArgsConstructor
@@ -37,4 +40,7 @@ public class DogRequest {
     private String photoUrl;
     
     private DogStatus status;
+    
+    // null = keep the current traits; empty = remove them all
+    private Set<DogTrait> traits;
 }

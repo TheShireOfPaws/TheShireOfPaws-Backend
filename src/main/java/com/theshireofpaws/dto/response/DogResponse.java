@@ -3,12 +3,14 @@ package com.theshireofpaws.dto.response;
 import com.theshireofpaws.entity.enums.DogGender;
 import com.theshireofpaws.entity.enums.DogSize;
 import com.theshireofpaws.entity.enums.DogStatus;
+import com.theshireofpaws.entity.enums.DogTrait;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -26,6 +28,7 @@ public class DogResponse {
     private String photoUrl;
     private DogStatus status;
     private String adoptedBy;  
+    private List<DogTrait> traits;
     private Integer adoptionRequestsCount;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
