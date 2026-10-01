@@ -1,7 +1,7 @@
 package com.theshireofpaws.repository;
 
 import com.theshireofpaws.entity.Dog;
-import com.theshireofpaws.entity.enums.DogGender; 
+import com.theshireofpaws.entity.enums.DogGender;
 import com.theshireofpaws.entity.enums.DogSize;
 import com.theshireofpaws.entity.enums.DogStatus;
 import org.springframework.data.domain.Page;
@@ -15,11 +15,11 @@ import java.util.UUID;
 
 @Repository
 public interface DogRepository extends JpaRepository<Dog, UUID> {
-    
+
     Page<Dog> findByStatus(DogStatus status, Pageable pageable);
-    
+
     Page<Dog> findByNameContainingIgnoreCase(String name, Pageable pageable);
-    
+
     @Query("SELECT d FROM Dog d WHERE " +
            "(:status IS NULL OR d.status = :status) AND " +
            "(:name IS NULL OR :name = '' OR LOWER(d.name) LIKE LOWER(CONCAT('%', :name, '%'))) AND " +
@@ -32,6 +32,6 @@ public interface DogRepository extends JpaRepository<Dog, UUID> {
         @Param("size") DogSize size,
         Pageable pageable
     );
-    
+
     long countByStatus(DogStatus status);
 }

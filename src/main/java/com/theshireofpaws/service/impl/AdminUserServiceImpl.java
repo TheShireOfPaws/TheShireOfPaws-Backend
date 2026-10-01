@@ -11,18 +11,18 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class AdminUserServiceImpl implements AdminUserService {
-    
+
     private final AdminUserRepository adminUserRepository;
-    
+
     public AdminUserServiceImpl(AdminUserRepository adminUserRepository) {
         this.adminUserRepository = adminUserRepository;
     }
-    
+
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         AdminUser adminUser = adminUserRepository.findByEmail(email)
             .orElseThrow(() -> new UsernameNotFoundException("Admin user not found with email: " + email));
-        
+
         return new AdminUserDetails(adminUser);
     }
 }

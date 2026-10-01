@@ -11,19 +11,19 @@ import org.springframework.data.domain.Pageable;
 import java.util.UUID;
 
 public interface DogService {
-    
+
     Page<DogResponse> getAllDogs(Pageable pageable);
-    
+
     DogResponse getDogById(UUID id);
-    
+
     DogResponse createDog(DogRequest request);
-    
+
     DogResponse updateDog(UUID id, DogRequest request);
-    
+
     void deleteDog(UUID id);
-    
+
     Page<DogResponse> filterDogs(DogStatus status, String name, DogGender gender, DogSize size, Pageable pageable);
-    
+
     long countByStatus(DogStatus status);
 
     long count();

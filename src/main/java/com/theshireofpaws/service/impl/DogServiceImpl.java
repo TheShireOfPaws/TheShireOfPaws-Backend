@@ -20,77 +20,72 @@ import java.util.UUID;
 @Service
 @Transactional
 public class DogServiceImpl implements DogService {
-    
+
     private final DogRepository dogRepository;
     private final DogMapper dogMapper;
-    
+
     public DogServiceImpl(DogRepository dogRepository, DogMapper dogMapper) {
         this.dogRepository = dogRepository;
         this.dogMapper = dogMapper;
     }
-    
+
     @Override
     @Transactional(readOnly = true)
     public Page<DogResponse> getAllDogs(Pageable pageable) {
         return dogRepository.findAll(pageable)
             .map(dogMapper::toResponse);
     }
-    
+
     @Override
     @Transactional(readOnly = true)
     public DogResponse getDogById(UUID id) {
-        Dog dog = dogRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Dog", "id", id));
-        
-        return dogMapper.toResponse(dog);
+        return dogMapper.toResponse(findDog(id));
     }
-    
+
     @Override
     public DogResponse createDog(DogRequest request) {
         Dog dog = dogMapper.toEntity(request);
-        
+
         if (dog.getStatus() == null) {
             dog.setStatus(DogStatus.AVAILABLE);
         }
-        
-        Dog savedDog = dogRepository.save(dog);
-        return dogMapper.toResponse(savedDog);
+
+        return dogMapper.toResponse(dogRepository.save(dog));
     }
-    
+
     @Override
     public DogResponse updateDog(UUID id, DogRequest request) {
-        Dog dog = dogRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Dog", "id", id));
-        
+        Dog dog = findDog(id);
         dogMapper.updateFromRequest(request, dog);
-        
-        Dog updatedDog = dogRepository.save(dog);
-        return dogMapper.toResponse(updatedDog);
+        return dogMapper.toResponse(dogRepository.save(dog));
     }
-    
+
     @Override
     public void deleteDog(UUID id) {
-        Dog dog = dogRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Dog", "id", id));
-        
-        dogRepository.delete(dog);
+        dogRepository.delete(findDog(id));
     }
-    
+
     @Override
     @Transactional(readOnly = true)
     public Page<DogResponse> filterDogs(DogStatus status, String name, DogGender gender, DogSize size, Pageable pageable) {
         return dogRepository.findByFilters(status, name, gender, size, pageable)
             .map(dogMapper::toResponse);
     }
-    
+
     @Override
     @Transactional(readOnly = true)
     public long countByStatus(DogStatus status) {
         return dogRepository.countByStatus(status);
     }
 
-        @Override
+    @Override
+    @Transactional(readOnly = true)
     public long count() {
         return dogRepository.count();
-}
+    }
+
+    private Dog findDog(UUID id) {
+        return dogRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Dog", "id", id));
+    }
 }

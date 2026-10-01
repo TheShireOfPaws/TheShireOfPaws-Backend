@@ -10,14 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UpdateAdoptionStatusRequest {
-    
+
     @NotNull(message = "Status is required")
     private AdoptionStatus status;
 }
-
-
-
-
-
-
-

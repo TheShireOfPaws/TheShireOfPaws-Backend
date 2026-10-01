@@ -99,29 +99,29 @@ class DogMapperTest {
         DogRequest request = baseRequest()
             .extraPhotoUrls(List.of("https://img/2.jpg", "https://img/3.jpg"))
             .build();
-        
+
         Dog dog = dogMapper.toEntity(request);
-        
+
         assertEquals(List.of("https://img/2.jpg", "https://img/3.jpg"), dog.getExtraPhotoUrls());
     }
-    
+
     @Test
     void updateFromRequest_ShouldKeepExtraPhotos_WhenNull() {
         Dog dog = dogWithTraits(DogTrait.CALM);
         dog.getExtraPhotoUrls().add("https://img/2.jpg");
-        
+
         dogMapper.updateFromRequest(baseRequest().build(), dog);
-        
+
         assertEquals(List.of("https://img/2.jpg"), dog.getExtraPhotoUrls());
     }
-    
+
     @Test
     void updateFromRequest_ShouldReplaceExtraPhotos_WhenSent() {
         Dog dog = dogWithTraits(DogTrait.CALM);
         dog.getExtraPhotoUrls().add("https://img/old.jpg");
-        
+
         dogMapper.updateFromRequest(baseRequest().extraPhotoUrls(List.of()).build(), dog);
-        
+
         assertTrue(dog.getExtraPhotoUrls().isEmpty());
     }
 }

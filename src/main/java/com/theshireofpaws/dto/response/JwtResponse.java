@@ -11,16 +11,9 @@ public class JwtResponse {
     private String token;
     private String email;
     private String type = "Bearer";
-    
+
     public JwtResponse(String token, String email) {
         this.token = token;
         this.email = email;
     }
 }
-
-
-
-
-
-
-

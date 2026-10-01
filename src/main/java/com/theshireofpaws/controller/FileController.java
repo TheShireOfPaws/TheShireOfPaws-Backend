@@ -5,7 +5,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -21,22 +20,16 @@ public class FileController {
     @PostMapping("/upload")
     public ResponseEntity<Map<String, String>> uploadFile(@RequestParam("file") MultipartFile file) {
         String fileUrl = fileStorageService.storeFile(file);
-
-        Map<String, String> response = new HashMap<>();
-        response.put("fileDownloadUri", fileUrl);
-        response.put("fileType", file.getContentType());
-        response.put("size", String.valueOf(file.getSize()));
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(Map.of(
+            "fileDownloadUri", fileUrl,
+            "fileType", String.valueOf(file.getContentType()),
+            "size", String.valueOf(file.getSize())
+        ));
     }
 
     @DeleteMapping
     public ResponseEntity<Map<String, String>> deleteFile(@RequestParam("url") String fileUrl) {
         fileStorageService.deleteFile(fileUrl);
-
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "File deleted successfully");
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(Map.of("message", "File deleted successfully"));
     }
 }

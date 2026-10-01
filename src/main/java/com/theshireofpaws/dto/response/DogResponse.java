@@ -18,21 +18,19 @@ import java.util.UUID;
 @NoArgsConstructor
 @Builder
 public class DogResponse {
-    
+
     private UUID id;
     private String name;
     private String story;
-    private DogGender gender; 
+    private DogGender gender;
     private Integer age;
-    private DogSize size; 
+    private DogSize size;
     private String photoUrl;
     private DogStatus status;
-    private String adoptedBy;  
+    private String adoptedBy;
     private List<DogTrait> traits;
     private List<String> extraPhotoUrls;
     private Integer adoptionRequestsCount;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }
-
-

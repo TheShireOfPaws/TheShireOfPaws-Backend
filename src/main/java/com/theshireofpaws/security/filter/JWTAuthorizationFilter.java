@@ -18,37 +18,36 @@ import java.io.IOException;
 import java.util.List;
 
 public class JWTAuthorizationFilter extends OncePerRequestFilter {
-    
+
     @Override
-    protected void doFilterInternal(HttpServletRequest request, 
-                                   HttpServletResponse response, 
+    protected void doFilterInternal(HttpServletRequest request,
+                                   HttpServletResponse response,
                                    FilterChain filterChain)
             throws ServletException, IOException {
-        
+
         String header = request.getHeader(SecurityConstants.HEADER_STRING);
-        
+
         if (header == null || !header.startsWith(SecurityConstants.TOKEN_PREFIX)) {
             filterChain.doFilter(request, response);
             return;
         }
-        
+
         try {
             String token = header.replace(SecurityConstants.TOKEN_PREFIX, "");
-            
+
             DecodedJWT decodedJWT = JWT.require(Algorithm.HMAC512(SecurityConstants.SECRET_KEY))
                 .build()
                 .verify(token);
-            
+
             String email = decodedJWT.getSubject();
-            
+
             Authentication authentication = new UsernamePasswordAuthenticationToken(
                 email,
                 null,
                 List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))
             );
-            
+
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
@@ -56,13 +55,7 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
             response.getWriter().flush();
             return;
         }
-        
+
         filterChain.doFilter(request, response);
     }
 }
-
-
-
-
-
-

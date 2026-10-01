@@ -19,7 +19,7 @@ public interface AdoptionRequestRepository extends JpaRepository<AdoptionRequest
     Page<AdoptionRequest> findByDog(Dog dog, Pageable pageable);
 
     List<AdoptionRequest> findByDogAndStatus(Dog dog, AdoptionStatus status);
-    
+
     long countByStatus(AdoptionStatus status);
 
     @Query("SELECT ar FROM AdoptionRequest ar WHERE " +
