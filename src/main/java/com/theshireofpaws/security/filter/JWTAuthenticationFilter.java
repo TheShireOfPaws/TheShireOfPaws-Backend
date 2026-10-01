@@ -3,9 +3,8 @@ package com.theshireofpaws.security.filter;
 import com.theshireofpaws.dto.request.AdminLoginRequest;
 import com.theshireofpaws.dto.response.JwtResponse;
 import com.theshireofpaws.security.CustomAuthenticationManager;
+import com.theshireofpaws.security.JwtService;
 import com.theshireofpaws.security.SecurityConstants;
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.algorithms.Algorithm;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -17,14 +16,15 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.io.IOException;
-import java.util.Date;
 
 public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
     private final CustomAuthenticationManager authenticationManager;
+    private final JwtService jwtService;
 
-    public JWTAuthenticationFilter(CustomAuthenticationManager authenticationManager) {
+    public JWTAuthenticationFilter(CustomAuthenticationManager authenticationManager, JwtService jwtService) {
         this.authenticationManager = authenticationManager;
+        this.jwtService = jwtService;
         setFilterProcessesUrl(SecurityConstants.LOGIN_URL);
     }
 
@@ -54,10 +54,7 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                                            Authentication authResult)
                                            throws IOException, ServletException {
 
-        String token = JWT.create()
-            .withSubject(authResult.getName())
-            .withExpiresAt(new Date(System.currentTimeMillis() + SecurityConstants.EXPIRATION_TIME))
-            .sign(Algorithm.HMAC512(SecurityConstants.SECRET_KEY));
+        String token = jwtService.createToken(authResult.getName());
 
         JwtResponse jwtResponse = new JwtResponse(token, authResult.getName());
 

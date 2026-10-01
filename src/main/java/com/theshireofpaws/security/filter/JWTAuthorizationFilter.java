@@ -1,9 +1,7 @@
 package com.theshireofpaws.security.filter;
 
+import com.theshireofpaws.security.JwtService;
 import com.theshireofpaws.security.SecurityConstants;
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.interfaces.DecodedJWT;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,6 +17,12 @@ import java.util.List;
 
 public class JWTAuthorizationFilter extends OncePerRequestFilter {
 
+    private final JwtService jwtService;
+
+    public JWTAuthorizationFilter(JwtService jwtService) {
+        this.jwtService = jwtService;
+    }
+
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                    HttpServletResponse response,
@@ -33,13 +37,8 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
         }
 
         try {
-            String token = header.replace(SecurityConstants.TOKEN_PREFIX, "");
-
-            DecodedJWT decodedJWT = JWT.require(Algorithm.HMAC512(SecurityConstants.SECRET_KEY))
-                .build()
-                .verify(token);
-
-            String email = decodedJWT.getSubject();
+            String token = header.substring(SecurityConstants.TOKEN_PREFIX.length());
+            String email = jwtService.verifyAndGetSubject(token);
 
             Authentication authentication = new UsernamePasswordAuthenticationToken(
                 email,

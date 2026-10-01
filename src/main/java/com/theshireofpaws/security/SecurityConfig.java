@@ -22,12 +22,14 @@ public class SecurityConfig {
     private static final String ADMIN = "ADMIN";
 
     private final CustomAuthenticationManager authenticationManager;
+    private final JwtService jwtService;
 
     @Value("${app.cors.allowed-origins}")
     private List<String> allowedOrigins;
 
-    public SecurityConfig(CustomAuthenticationManager authenticationManager) {
+    public SecurityConfig(CustomAuthenticationManager authenticationManager, JwtService jwtService) {
         this.authenticationManager = authenticationManager;
+        this.jwtService = jwtService;
     }
 
     @Bean
@@ -46,8 +48,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/adoption-requests/**").hasRole(ADMIN)
                 .anyRequest().authenticated()
             )
-            .addFilter(new JWTAuthenticationFilter(authenticationManager))
-            .addFilterAfter(new JWTAuthorizationFilter(), JWTAuthenticationFilter.class)
+            .addFilter(new JWTAuthenticationFilter(authenticationManager, jwtService))
+            .addFilterAfter(new JWTAuthorizationFilter(jwtService), JWTAuthenticationFilter.class)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         return http.build();
